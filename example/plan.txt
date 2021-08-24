@@ -1,0 +1,28 @@
+Nested Loop Left Join  (cost=1.51..3.74 rows=1 width=444) (actual time=5.084..5.354 rows=117 loops=1)
+  Output: s.datid, d.datname, s.pid, s.leader_pid, s.usesysid, u.rolname, s.application_name, s.client_addr, s.client_hostname, s.client_port, s.backend_start, s.xact_start, s.query_start, s.state_change, s.wait_event_type, s.wait_event, s.state, s.backend_xid, s.backend_xmin, s.query, s.backend_type
+  Inner Unique: true
+  Join Filter: (s.datid = d.oid)
+  Rows Removed by Join Filter: 117
+  Buffers: shared hit=121
+  ->  Hash Right Join  (cost=1.51..2.65 rows=1 width=380) (actual time=5.071..5.117 rows=117 loops=1)
+        Output: s.datid, s.pid, s.leader_pid, s.usesysid, s.application_name, s.client_addr, s.client_hostname, s.client_port, s.backend_start, s.xact_start, s.query_start, s.state_change, s.wait_event_type, s.wait_event, s.state, s.backend_xid, s.backend_xmin, s.query, s.backend_type, u.rolname
+        Hash Cond: (u.oid = s.usesysid)
+        Buffers: shared hit=4
+        ->  Seq Scan on pg_catalog.pg_authid u  (cost=0.00..1.09 rows=9 width=68) (actual time=0.009..0.011 rows=9 loops=1)
+              Output: u.oid, u.rolname, u.rolsuper, u.rolinherit, u.rolcreaterole, u.rolcreatedb, u.rolcanlogin, u.rolreplication, u.rolbypassrls, u.rolconnlimit, u.rolpassword, u.rolvaliduntil
+              Buffers: shared hit=1
+        ->  Hash  (cost=1.50..1.50 rows=1 width=316) (actual time=5.010..5.011 rows=117 loops=1)
+              Output: s.datid, s.pid, s.leader_pid, s.usesysid, s.application_name, s.client_addr, s.client_hostname, s.client_port, s.backend_start, s.xact_start, s.query_start, s.state_change, s.wait_event_type, s.wait_event, s.state, s.backend_xid, s.backend_xmin, s.query, s.backend_type
+              Buckets: 1024  Batches: 1  Memory Usage: 41kB
+              ->  Function Scan on pg_catalog.pg_stat_get_activity s  (cost=0.00..1.50 rows=1 width=316) (actual time=4.819..4.938 rows=117 loops=1)
+                    Output: s.datid, s.pid, s.leader_pid, s.usesysid, s.application_name, s.client_addr, s.client_hostname, s.client_port, s.backend_start, s.xact_start, s.query_start, s.state_change, s.wait_event_type, s.wait_event, s.state, s.backend_xid, s.backend_xmin, s.query, s.backend_type
+                    Function Call: pg_stat_get_activity(NULL::integer)
+                    Filter: ((s.state = 'active'::text) AND (s.wait_event_type = 'Client'::text))
+                    Rows Removed by Filter: 586
+  ->  Seq Scan on pg_catalog.pg_database d  (cost=0.00..1.04 rows=4 width=68) (actual time=0.000..0.000 rows=2 loops=117)
+        Output: d.oid, d.datname, d.datdba, d.encoding, d.datcollate, d.datctype, d.datistemplate, d.datallowconn, d.datconnlimit, d.datlastsysoid, d.datfrozenxid, d.datminmxid, d.dattablespace, d.datacl
+        Buffers: shared hit=117
+Planning:
+  Buffers: shared hit=75
+Planning Time: 0.843 ms
+Execution Time: 5.597 ms
